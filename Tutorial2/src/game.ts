@@ -16,8 +16,12 @@ jukebox.addComponent(new Transform({
   rotation: Quaternion.Euler(0, 180 ,0),
   scale: new Vector3(0.6, 0.6, 0.6)
 }))
-jukebox.addComponent(new OnClick( e => {
+jukebox.addComponent(new OnPointerDown( e => {
   pressButton()
+},
+{
+  button: ActionButton.POINTER,
+  hoverText: "Play Next Song"
 }))
 engine.addEntity(jukebox)
 
@@ -45,6 +49,7 @@ for (let i = 0; i < songs.length; i ++){
   let song = new AudioClip(songs[i].src)
   let audioSource = new AudioSource(song)
   audioSource.playing = false
+  audioSource.loop = true
   songArray[i].addComponent(audioSource)
   songArray[i].setParent(jukebox)
   engine.addEntity(songArray[i])

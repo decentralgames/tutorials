@@ -2,8 +2,8 @@ import { getProvider } from '@decentraland/web3-provider';
 import { getUserAccount } from '@decentraland/EthereumController';
 import * as EthConnect from '../node_modules/eth-connect/esm';
 import ABIMANA from '../contracts/ABIMANA';
-import {Jukebox} from 'modules/Jukebox';
-import {DiscoBall} from 'modules/DiscoBall'
+import {Jukebox} from 'modules/jukebox';
+import {DiscoBall} from 'modules/discoball'
 
 // Custom component used to hold door rotation data
 @Component('SlerpData')
@@ -30,13 +30,13 @@ export class SlerpRotate implements ISystem {
 }
 
 // Store disco ball and jukebox objects in variables
-const disco = new DiscoBall(new Vector3(8, 5, 9), 0.5)
+const disco = new DiscoBall(new Vector3(8, 5, 8), 0.5)
 const jukebox = new Jukebox(new Vector3(14, 0, 11), Quaternion.Euler(0, 270, 0), 0.6)
 
 // Used to keep track if doors have already been opened
 let doorOpened : boolean = false
 
-// Prompts user to pay 100 MANA; if success, doors open and disco ball / jukebox activate; if failure, nothing occurs
+// Prompts user to pay 100 MANA; if success, doors open and jukebox activates; if failure, nothing occurs
 function payment(){
   executeTask(async () => {
     try {
@@ -55,9 +55,10 @@ function payment(){
       )
       log(res)
       engine.addSystem(new SlerpRotate())
-      disco.startSystem()
       jukebox.pressButton()
       doorOpened = true
+      door1.getComponent(OnPointerDown).showFeedback = false
+      door2.getComponent(OnPointerDown).showFeedback = false
     } catch (error) {
       log(error.toString());
     }
@@ -71,10 +72,14 @@ door1.addComponent(new Transform({
   position: new Vector3(3.4, -0.16, 14.35),
   scale: new Vector3(1.5, 1.5, 1.5)
 }))
-door1.addComponent(new OnClick( e => {
+door1.addComponent(new OnPointerDown( e => {
   if (!doorOpened){
     payment()
   }
+},
+{
+  button: ActionButton.PRIMARY,
+  hoverText: "Enter (100 MANA)"
 }))
 door1.addComponent(new SlerpData())
 engine.addEntity(door1)
@@ -86,10 +91,14 @@ door2.addComponent(new Transform({
   scale: new Vector3(1.5, 1.5, 1.5),
   rotation: Quaternion.Euler(0, 0, 180)
 }))
-door2.addComponent(new OnClick( e => {
+door2.addComponent(new OnPointerDown( e => {
   if (!doorOpened){
     payment()
   }
+},
+{
+  button: ActionButton.PRIMARY,
+  hoverText: "Enter (100 MANA)"
 }))
 door2.addComponent(new SlerpData())
 door2.getComponent(SlerpData).originRot = Quaternion.Euler(0, 0, 180)

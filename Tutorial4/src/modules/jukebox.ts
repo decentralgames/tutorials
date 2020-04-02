@@ -37,6 +37,10 @@ export class Jukebox {
     }))
     this.jukebox.addComponent(new OnClick( e => {
       this.pressButton()
+    },
+    {
+      button: ActionButton.POINTER,
+      hoverText: "Play Next Song"
     }))
     engine.addEntity(this.jukebox)
   }
@@ -66,6 +70,7 @@ export class Jukebox {
       let song = new AudioClip(this.songs[i].src)
       let audioSource = new AudioSource(song)
       audioSource.playing = false
+      audioSource.loop = true
       this.songArray[i].addComponent(audioSource)
       this.songArray[i].setParent(this.jukebox)
       engine.addEntity(this.songArray[i])

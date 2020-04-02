@@ -25,8 +25,12 @@ function spawnBall(x: number, y: number, z: number) {
 
   // This spawns another ball whenever a ball is clicked on.
   ball.addComponent(
-    new OnClick(() => {
+    new OnPointerDown(() => {
       spawnBall(Math.random() * 20 + 1, Math.random() * 20, Math.random() * 20 + 1)
+    },
+    {
+      button: ActionButton.POINTER,
+      hoverText: "Spawn Ball"
     })
   )
 

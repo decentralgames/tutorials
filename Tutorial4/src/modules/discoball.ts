@@ -1,7 +1,12 @@
-const NUM_LASERS = 36
+const NUM_LASERS = 18
 
 @Component("Laser")
-export class Laser {}
+export class Laser {
+  cycleForward: boolean = true
+}
+
+@Component("InvisEntity")
+export class InvisEntity {}
 
 @Component("Ball")
 export class Ball {}
@@ -10,45 +15,39 @@ export class Ball {}
 export class DiscoSystem {
   update(dt: number) {
     const laserList = engine.getComponentGroup(Laser)
+    const invisEntityList = engine.getComponentGroup(InvisEntity)
     for (let entity of laserList.entities){
-      entity.getComponent(Transform).rotate(Vector3.Forward(), dt * 20)
-      entity.getComponent(Transform).rotate(Vector3.Left(), dt * 20)
+      let rotX = entity.getComponent(Transform).rotation.eulerAngles.x
+      let cycleForward = entity.getComponent(Laser).cycleForward
+      if (cycleForward){
+        if (rotX > -130 && rotX < 0){
+          entity.getComponent(Laser).cycleForward = false
+        } else {
+          entity.getComponent(Transform).rotate(Vector3.Right(), dt * 15)
+        }
+      } else {
+        if (rotX < 130 && rotX > 0){
+          entity.getComponent(Laser).cycleForward = true
+        } else {
+          entity.getComponent(Transform).rotate(Vector3.Left(), dt * 15)
+        }
+      }
+    }
+    for (let entity of invisEntityList.entities){
+      entity.getComponent(Transform).rotate(Vector3.Up(), dt * 15)
     }
     engine.getComponentGroup(Ball).entities[0].getComponent(Transform).rotate(Vector3.Up(), dt * 30)
-    const flicker = engine.getComponentGroup(Laser).entities[Math.floor(Math.random()*NUM_LASERS)]
-    flicker.getComponent(GLTFShape).visible = !flicker.getComponent(GLTFShape).visible
+    if (Math.random() <= 0.1){
+      const flicker = engine.getComponentGroup(Laser).entities[Math.floor(Math.random()*NUM_LASERS)]
+      flicker.getComponent(GLTFShape).visible = !flicker.getComponent(GLTFShape).visible
+    }
   }
 }
 
 let activeDiscoSystem = new DiscoSystem()
 
-// Defines grid to toggle laser rays depending on player position
-let inBounds: boolean = true
-export class RangeCheckSystem {
-  update() {
-    const ballPos = engine.getComponentGroup(Ball).entities[0].getComponent(Transform).position
-    const camPos = Camera.instance.position
-    const laserList = engine.getComponentGroup(Laser)
-    if ((ballPos.x - camPos.x) < 7 && (ballPos.x - camPos.x) > -7 && (ballPos.z - camPos.z) < 7 &&
-     (ballPos.z - camPos.z) > -7 && camPos.y < 5.5 && !inBounds) {
-      inBounds = true
-      engine.addSystem(activeDiscoSystem)
-      for (let entity of laserList.entities){
-        entity.getComponent(GLTFShape).visible = 1
-      }
-    } else if (((ballPos.x - camPos.x) >= 8 || (ballPos.x - camPos.x) <= -8 || (ballPos.z - camPos.z) >= 8 || (ballPos.z - camPos.z) <= -8 || camPos.y >= 6.5) && inBounds) {
-      inBounds = false
-      engine.removeSystem(activeDiscoSystem)
-      for (let entity of laserList.entities){
-        entity.getComponent(GLTFShape).visible = 0
-      }
-    }
-  }
-}
-
 export class DiscoBall {
   discoball: Entity = new Entity()
-
   position: Vector3;
   scale: number;
 
@@ -58,10 +57,7 @@ export class DiscoBall {
 
     this.spawnBall();
     this.spawnLasers();
-  }
-  
-  startSystem() {
-    engine.addSystem(new RangeCheckSystem())
+    engine.addSystem(activeDiscoSystem)
   }
 
   spawnBall() {
@@ -81,15 +77,22 @@ export class DiscoBall {
 
     // Creates laser rays
     for (let i = 0; i < NUM_LASERS; i++){
+      const invisEntity = new Entity()
+      invisEntity.addComponent(new InvisEntity())
+      invisEntity.addComponent(new Transform({
+        position: this.position,
+        rotation: Quaternion.Euler(0, 180-360*Math.random(), 0)
+      }))
+      engine.addEntity(invisEntity)
+
       let laserColor = laserColorArray[Math.floor(Math.random()*laserColorArray.length)]
       const laser = new Entity()
+      laser.setParent(invisEntity)
       laser.addComponent(new Laser())
       laser.addComponent(new GLTFShape(laserColor))
       laser.addComponent(new Transform({
-        position: this.position,
-        rotation: Quaternion.Euler(i*6, i*14, i*26)
+        rotation: Quaternion.Euler([-1, 1][Math.floor(Math.random()*2)]*(130+50*Math.random()), 0, 0)
       }))
-      laser.getComponent(GLTFShape).visible = 0
       engine.addEntity(laser)
     }
   }
