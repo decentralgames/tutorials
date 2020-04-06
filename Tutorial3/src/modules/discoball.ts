@@ -1,5 +1,3 @@
-const NUM_LASERS = 18
-
 @Component("Laser")
 export class Laser {
   cycleForward: boolean = true
@@ -16,6 +14,7 @@ export class DiscoSystem {
   update(dt: number) {
     const laserList = engine.getComponentGroup(Laser)
     const invisEntityList = engine.getComponentGroup(InvisEntity)
+    const ballList = engine.getComponentGroup(Ball)
     for (let entity of laserList.entities){
       let rotX = entity.getComponent(Transform).rotation.eulerAngles.x
       let cycleForward = entity.getComponent(Laser).cycleForward
@@ -36,9 +35,11 @@ export class DiscoSystem {
     for (let entity of invisEntityList.entities){
       entity.getComponent(Transform).rotate(Vector3.Up(), dt * 15)
     }
-    engine.getComponentGroup(Ball).entities[0].getComponent(Transform).rotate(Vector3.Up(), dt * 30)
+    for (let entity of ballList.entities){
+      entity.getComponent(Transform).rotate(Vector3.Up(), dt * 30)
+    }
     if (Math.random() <= 0.1){
-      const flicker = engine.getComponentGroup(Laser).entities[Math.floor(Math.random()*NUM_LASERS)]
+      const flicker = laserList.entities[Math.floor(Math.random()*laserList.entities.length)]
       flicker.getComponent(GLTFShape).visible = !flicker.getComponent(GLTFShape).visible
     }
   }
@@ -48,15 +49,17 @@ let activeDiscoSystem = new DiscoSystem()
 
 export class DiscoBall {
   discoball: Entity = new Entity()
-  position: Vector3;
-  scale: number;
+  position: Vector3
+  scale: number
+  numLasers: number
 
-  constructor(position: Vector3, scale: number) {
-    this.position = position;
-    this.scale = scale;
+  constructor(position: Vector3, scale: number, numLasers: number) {
+    this.position = position
+    this.scale = scale
+    this.numLasers = numLasers
 
-    this.spawnBall();
-    this.spawnLasers();
+    this.spawnBall()
+    this.spawnLasers()
     engine.addSystem(activeDiscoSystem)
   }
 
@@ -76,7 +79,7 @@ export class DiscoBall {
     "models/laser_cyan.glb", "models/laser_yellow.glb"]
 
     // Creates laser rays
-    for (let i = 0; i < NUM_LASERS; i++){
+    for (let i = 0; i < this.numLasers; i++){
       const invisEntity = new Entity()
       invisEntity.addComponent(new InvisEntity())
       invisEntity.addComponent(new Transform({

@@ -65,7 +65,7 @@ function payment(){
   })
 }
 
-// Create door entities and give them proper OnClick and SlerpData components
+// Create door entities and give them proper OnPointerDown and SlerpData components
 const door1 = new Entity()
 door1.addComponent(new GLTFShape("models/scene/door.glb"))
 door1.addComponent(new Transform({

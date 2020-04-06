@@ -1,6 +1,6 @@
 import {DiscoBall} from 'modules/discoball'
 
-const disco = new DiscoBall(new Vector3(8, 7, 8), 0.6)
+const disco = new DiscoBall(new Vector3(8, 7, 8), 0.6, 18)
 
 // Background music
 const music = new Entity()
