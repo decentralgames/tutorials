@@ -30,7 +30,7 @@ export class SlerpRotate implements ISystem {
 }
 
 // Store disco ball and jukebox objects in variables
-const disco = new DiscoBall(new Vector3(8, 5, 8), 0.5)
+const disco = new DiscoBall(new Vector3(8, 5, 8), 0.5, 18)
 const jukebox = new Jukebox(new Vector3(14, 0, 11), Quaternion.Euler(0, 270, 0), 0.6)
 
 // Used to keep track if doors have already been opened
